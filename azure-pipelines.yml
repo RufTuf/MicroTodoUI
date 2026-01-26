@@ -5,8 +5,7 @@ stages:
 - stage: Build
   jobs:
   - job: BuildJob
-    pool:
-      vmImage: ubuntu-latest
+    pool: default
     steps:
     - script: echo "Build successful"
 - stage: Deploy_Dev
