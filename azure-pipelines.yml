@@ -1,0 +1,21 @@
+trigger:
+- main
+
+stages:
+- stage: Build
+  jobs:
+  - job: BuildJob
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - script: echo "Build successful"
+- stage: Deploy_Dev
+  dependsOn: Build
+  jobs:
+  - deployment: DeployToDev
+    environment: dev   # 👈 YAHI WALA ENV
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Deploying to DEV environment"
