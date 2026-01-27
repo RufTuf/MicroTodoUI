@@ -21,7 +21,7 @@ stages:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'drop'
         publishLocation: 'Container'
-        MaxArtifactSize: 10000
+        MaxArtifactSize: 50000
 
 - stage: Deploy_Dev
   dependsOn: Build
