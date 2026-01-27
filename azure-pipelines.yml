@@ -1,49 +1,51 @@
 trigger:
 - main
-pool: default
+
+pool:
+  name: default
 
 stages:
+# ---------------- BUILD ----------------
 - stage: Build
   jobs:
   - job: BuildJob
-    pool: default
     steps:
-    - script: echo "Build successful"
+    - checkout: self
+
+    - script: |
+        npm install
+        npm run build
+      displayName: Build UI
+
     - task: ArchiveFiles@2
       inputs:
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+        rootFolderOrFile: 'build'
         includeRootFolder: false
         archiveType: 'zip'
         archiveFile: '$(Build.ArtifactStagingDirectory)/todoapp.zip'
         replaceExistingArchive: true
+
     - task: PublishBuildArtifacts@1
       inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'drop'
-        publishLocation: 'Container'
-        MaxArtifactSize: 50000
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: 'drop'
 
+# ---------------- DEPLOY ----------------
 - stage: Deploy_Dev
   dependsOn: Build
   jobs:
-
   - deployment: DeployToDev
     environment: dev
     strategy:
       runOnce:
         deploy:
           steps:
-          - script: echo "Deploying to DEV environment"
-          - task: DownloadBuildArtifacts@1
-            inputs:
-              buildType: 'current'
-              downloadType: 'specific'
-              downloadPath: '$(Build.ArtifactStagingDirectory)'
-        
+          - download: current
+            artifact: drop
+
           - task: AzureWebApp@1
             inputs:
               azureSubscription: 'Terraform2(1a39c6ac-4bf8-406a-be20-298e2ae5b5ce)'
               appType: 'webAppLinux'
               appName: 'todoappui'
-              package: '$(System.DefaultWorkingDirectory)'
-              runtimeStack: 'NODE|24-lts'
+              package: '$(Pipeline.Workspace)/drop/todoapp.zip'
