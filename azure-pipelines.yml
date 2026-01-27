@@ -19,3 +19,11 @@ stages:
         deploy:
           steps:
           - script: echo "Deploying to DEV environment"
+        
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: 'Terraform2(1a39c6ac-4bf8-406a-be20-298e2ae5b5ce)'
+              appType: 'webAppLinux'
+              appName: 'todoappui'
+              package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+              runtimeStack: 'NODE|24-lts'
