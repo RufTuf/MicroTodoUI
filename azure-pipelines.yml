@@ -9,9 +9,24 @@ stages:
     pool: default
     steps:
     - script: echo "Build successful"
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/todoapp.zip'
+        replaceExistingArchive: true
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+        MaxArtifactSize: 10000
+
 - stage: Deploy_Dev
   dependsOn: Build
   jobs:
+
   - deployment: DeployToDev
     environment: dev
     strategy:
@@ -19,11 +34,16 @@ stages:
         deploy:
           steps:
           - script: echo "Deploying to DEV environment"
+          - task: DownloadBuildArtifacts@1
+            inputs:
+              buildType: 'current'
+              downloadType: 'specific'
+              downloadPath: '$(Build.ArtifactStagingDirectory)'
         
           - task: AzureWebApp@1
             inputs:
               azureSubscription: 'Terraform2(1a39c6ac-4bf8-406a-be20-298e2ae5b5ce)'
               appType: 'webAppLinux'
               appName: 'todoappui'
-              package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+              package: '$(System.DefaultWorkingDirectory)'
               runtimeStack: 'NODE|24-lts'
