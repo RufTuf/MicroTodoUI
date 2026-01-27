@@ -1,5 +1,6 @@
 trigger:
 - main
+pool: default
 
 stages:
 - stage: Build
@@ -12,7 +13,7 @@ stages:
   dependsOn: Build
   jobs:
   - deployment: DeployToDev
-    environment: dev   # 👈 YAHI WALA ENV
+    environment: dev
     strategy:
       runOnce:
         deploy:
